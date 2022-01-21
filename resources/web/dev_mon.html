@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <title>Device Ping Monitoring </title>
+    <meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/png" href="/static/icons/icon_1.png"/>
+    <style>
+
+        .label_online {
+        background: #63ff00;
+        text-align: center;
+        border-radius: 10px;
+        width: 100px;
+
+        }
+        .label_offline {
+        background: gray;
+        text-align: center;
+        border-radius: 10px;
+        width: 100px;
+        }
+
+
+
+    </style>
+
+
+    <script type="text/javascript" src="/static/assets/jquery-3.6.0.js"></script>
+    <link rel="stylesheet" type="text/css" href="/static/assets/datatables.min.css"/>
+    <script type="text/javascript" src="/static/assets/datatables.min.js"></script>
+
+    
+</head>
+<body>
+    <table id = "data_table" class="table table-striped" style="width:100%"></table>
+</body>
+
+<script>
+ 
+//----------------------------------------------------------
+    //делаем предположение, что время сервера и компьютера не различаются:))) иначе надо еще и время сервера получать
+
+    function formatDate(date) {
+      if (isNaN(date)) {
+        return '-?-'
+      }
+      let diff = new Date() - date; // разница в миллисекундах
+
+      if (diff < 1000) { // меньше 1 секунды
+        return 'прямо сейчас';
+      }
+
+      let sec = Math.floor(diff / 1000); // преобразовать разницу в секунды
+
+      if (sec < 60) {
+        return sec + ' сек. назад';
+      }
+
+      let min = Math.floor(diff / 60000); // преобразовать разницу в минуты
+      if (min < 60) {
+        return min + ' мин. назад';
+      }
+
+      // отформатировать дату
+      // добавить ведущие нули к единственной цифре дню/месяцу/часам/минутам
+      let d = date;
+      d = [
+        '0' + d.getDate(),
+        '0' + (d.getMonth() + 1),
+        '' + d.getFullYear(),
+        '0' + d.getHours(),
+        '0' + d.getMinutes()
+      ].map(component => component.slice(-2)); // взять последние 2 цифры из каждой компоненты
+
+      // соединить компоненты в дату
+      return d.slice(0, 3).join('.') + ' ' + d.slice(3).join(':');
+    }
+
+    
+//----------------------------------------------------------
+function Init_table() {
+
+//---------------------------------------------
+// функция рендера для колонки статус - используется ниже 
+function render_status( data, type){
+    if ('display'==type) {
+        if (data =='online') {
+            return "<div class = 'label_online' >ONLINE</div>"  
+        }
+        else if (data =='offline') {
+            return "<div class = 'label_offline' >OFFLINE</div>"
+        }
+        else {
+            return "<div class = 'label_offline'>"+String(data).toUpperCase()+"</div>"
+        }
+    }
+    else
+    {
+        return data;
+    }
+
+}
+//-----------------------------------------------
+var table = $('#data_table').DataTable( {
+        stateSave: false,
+        "pageLength": 25,
+        ajax: {
+        url: '/api/devices',
+        dataSrc: ''
+        },
+        
+
+        columns : [
+            {title:"Тип", data: 'type', defaultContent: ""},
+            {title:"Наименование", data: 'name'},
+            {title:"IP", data: 'ip'},
+            {title:"MAC addr", data: 'mac', "defaultContent": "-"},
+            {title:"Статус", data: 'status', "defaultContent": "unknown", render: render_status},
+            {title:"Обновление", data: 'last_discovery', "defaultContent": "<i>-?-</i>",   render : function (data, type) {return formatDate(new Date(data))}},
+            {title:"Онлайн", data: 'last_online', "defaultContent": "<i>-?-</i>", render : function (data, type) {return formatDate(new Date(data))}}
+        ],
+        columnDefs: [
+            { searchPanes: {show: true}, targets: [0,4] },
+            { searchPanes: {show: false}, targets: [1,2,3,5,6] },
+            
+        ],
+
+
+        searchPanes: {
+            columns: [0,4]
+        },
+
+        dom: 'Bfrtip',
+        buttons: [
+            'colvis',
+            'searchPanes',
+            'excel',
+            'print'
+        ],
+        
+      
+        });
+
+    return table;
+}
+//----------------------------------------------------------
+$(document).ready(  function()  {
+        var table = Init_table();  
+        setInterval(function() { 
+        table.ajax.reload(null, false); } , 5000);  
+        }
+    ) //ready $
+//----------------------------------------------------------    
+
+</script>
+</html>

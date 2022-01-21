@@ -1,0 +1,32 @@
+[
+    {
+        "type": "server",
+        "name": "router",
+        "ip": "192.168.2.1",
+        "monitoring": "enable"
+    },
+    {
+        "type": "server",
+        "name": "nas",
+        "ip": "192.168.2.202",
+        "monitoring": "enable"
+    },
+    {
+        "type": "server",
+        "name": "raspi",
+        "ip": "192.168.2.200",
+        "monitoring": "enable"
+    },
+    {
+        "type": "Internet",
+        "name": "Google",
+        "ip": "8.8.8.8",
+        "monitoring": "enable"
+    },
+    {
+        "type": "Fake",
+        "name": "Fake",
+        "ip": "8.0.0.1",
+        "monitoring": "enable"
+    }
+]

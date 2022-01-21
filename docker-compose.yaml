@@ -1,0 +1,20 @@
+version: '3.8'
+services:
+  net_monitor:
+    container_name: net_monitor
+    build: .
+    volumes: 
+      - "/home/rurik/config:/monitor/config"
+
+    command: gunicorn --bind 0.0.0.0:5000 wsgi:app
+    environment:
+      - DISCOVERY_PERIOD_SEC=5
+      - DISCOVERY_WORKER_POOL=5
+      - DEBUG=0
+    #ports:
+    #  - 5000:5000
+    network_mode: "host"
+
+
+
+
